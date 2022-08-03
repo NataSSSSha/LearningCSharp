@@ -6,57 +6,56 @@ using System.Threading.Tasks;
 
 namespace Lesson_5
 {
-    internal class PhoneBook
+    /// <summary>
+    /// Класс PhoneBook предоставляет CRUD функциональные методы для работы с абонентами.
+    /// </summary>
+    public class PhoneBook
     {
         /// <summary>
-        /// Объект, в котором хранится единственный экземпляр класса
+        /// Объект, в котором хранится единственный экземпляр класса.
         /// </summary>
         private static PhoneBook intance;
 
         /// <summary>
-        /// Путь к тфайлу с данными абонентов
+        /// Имя файла, в котором хранятся данные об абонентах.
         /// </summary>
-        private string path = Path.Combine(Directory.GetCurrentDirectory(), "phonebook.txt");
+        private const string nameOfFile = "phonebook.txt";
 
         /// <summary>
-        /// Список с абонентами
+        /// Путь к файлу с данными абонентов.
         /// </summary>
-        List<Subscriber> subscribers = new List<Subscriber>();
+        private string path = Path.Combine(Directory.GetCurrentDirectory(), nameOfFile);
 
         /// <summary>
-        /// Конструктор
+        /// Список с абонентами.
+        /// </summary>
+        internal List<Subscriber> subscribers = new List<Subscriber>();
+
+        /// <summary>
+        /// Конструктор.
         /// </summary>
         private PhoneBook()
         {
-            string newName = "Subscriber";
-            string newPhoneBook;
-            int countLineInFile = 0;
             if (File.Exists(path))
                 using (StreamReader fs = new StreamReader(path, true))
                 {
                     while (true)
                     {
                         if (fs.EndOfStream) break;
+                        string line = fs.ReadLine();
+                        string[] Sub = line.Split(new char[] {'\t'}, StringSplitOptions.RemoveEmptyEntries);
 
-                        if (countLineInFile % 2 == 0)
-                            newName = fs.ReadLine();
-
-                        if (countLineInFile % 2 == 1)
-                        {
-                            newPhoneBook = fs.ReadLine();
-                            Subscriber subscriber = new Subscriber(newName, newPhoneBook);
-                            subscribers.Add(subscriber);
-                        }
-                        countLineInFile++;
+                        Subscriber subscriber = new Subscriber(Sub[0], Sub[1]);
+                        subscribers.Add(subscriber);
                     }
                 }
-            Menu();
+            Console.WriteLine(subscribers[1].PhoneNumber);
         }
 
         /// <summary>
-        /// Создает единственный экземпляр класса
+        /// Создает единственный экземпляр класса.
         /// </summary>
-        /// <returns>единственный экземпляр класса</returns>
+        /// <returns>Единственный экземпляр класса.</returns>
         public static PhoneBook GetIntance()
         {
             if (intance == null)
@@ -65,84 +64,31 @@ namespace Lesson_5
         }
 
         /// <summary>
-        /// Меню
+        /// Добавляет абонента.
         /// </summary>
-        private void Menu()
+        /// <param name="name">Имя абонента.</param>
+        /// <param name="phoneNumber">Номер абонента.</param>
+        public void AddSubscriber(string name, string phoneNumber)
         {
-            int numberOfMenu;
-            do
+            if (ISNewSubscriberCorrect(name, phoneNumber))
             {
-                Console.WriteLine("Выбери действие:\n" +
-                    "1 - добавить контакт\n" +
-                    "2 - удалить контакт\n" +
-                    "3 - найти контакт по имени\n" +
-                    "4 - найти контакт по номеру\n" +
-                    "5 - завершить программу");
-
-                bool result = int.TryParse(Console.ReadLine(), out numberOfMenu);
-                if (result)
-                    switch (numberOfMenu)
-                    {
-                        case 1:
-                            AddSubscriber();
-                            break;
-                        case 2:
-                            DeleteSybscriber();
-                            break;
-                        case 3:
-                            FindNuberOfSubscriber();
-                            break;
-                        case 4:
-                            FindNameOfSubscriber();
-                            break;
-                        case 5:
-                            WriteToFile();
-                            break;
-                        default:
-                            Console.WriteLine("Неверный номер");
-                            break;
-                    }
-                else
-                    Console.WriteLine("Неверное значение");
-            }
-            while (numberOfMenu != 5);
-        }
-
-        /// <summary>
-        /// Добавляет абонента
-        /// </summary>
-        private void AddSubscriber()
-        {
-            Console.WriteLine("Введите имя:");
-            string? newName = Console.ReadLine();
-            Console.WriteLine("Введите номер:");
-            string? newPhoneNumber = Console.ReadLine();
-
-            if (ISNewSubscriberCorreect(newName, newPhoneNumber))
-            {
-                Subscriber newSubscriber = new Subscriber(newName, newPhoneNumber);
+                Subscriber newSubscriber = new Subscriber(name, phoneNumber);
                 subscribers.Add(newSubscriber);
                 Console.WriteLine("Пользователь добавлен");
             }
         }
 
         /// <summary>
-        /// Проверяет данные абонента
+        /// Проверяет данные абонента.
         /// </summary>
-        /// <param name="name">имя абонента</param>
-        /// <param name="phoneNumber">номер б</param>
-        /// <returns>корректно ли введены данные абонента</returns>
-        private bool ISNewSubscriberCorreect(string name, string phoneNumber)
+        /// <param name="name">Имя абонента.</param>
+        /// <param name="phoneNumber">Номер абонента.</param>
+        /// <returns>Корректно ли введены данные абонента.</returns>
+        private bool ISNewSubscriberCorrect(string name, string phoneNumber)
         {
             if (name == null || phoneNumber == null)
             {
                 Console.WriteLine("Отсутствуют данные");
-                return false;
-            }
-
-            if (!(int.TryParse(phoneNumber, out int result)))
-            {
-                Console.WriteLine("Введенное значение не является номером");
                 return false;
             }
 
@@ -158,41 +104,33 @@ namespace Lesson_5
         }
 
         /// <summary>
-        /// Удаляет абонента
+        /// Удаляет абонента.
         /// </summary>
-        private void DeleteSybscriber()
+        /// <param name="name">Имя абонента.</param>
+        /// <returns>Удален ли абонент.</returns>
+        public bool DeleteSybscriber(string name)
         {
             bool IsDeleteSucsses = false;
-            if (subscribers.Count == 0)
-                Console.WriteLine("Пока нет ни одного абонента:(");
-            else
-            {
-                Console.WriteLine("Введите имя абонента, которого хотите удалить");
-                string? name = Console.ReadLine();
                 for (int i = 0; i < subscribers.Count; i++)
                 {
                     if (subscribers[i].Name == name)
                     {
-                        Console.WriteLine($"Контакт {subscribers[i].Name} ," +
-                            $" номер {subscribers[i].PhoneNumber}  успешно удален");
                         subscribers.RemoveAt(i);
                         i = -1;
                         IsDeleteSucsses = true;
                     }
                 }
-                if (!IsDeleteSucsses)
-                    Console.WriteLine("Абонент не найден");
-            }
+            return IsDeleteSucsses;
         }
 
         /// <summary>
-        /// Выводит номер(а) телефона абонента по имени
+        /// Выводит номер(а) телефона абонента по имени.
         /// </summary>
-        private void FindNuberOfSubscriber()
+        /// <param name="name">Имя абонента.</param>
+        public void FindSubscriberByName(string name)
         {
             bool IsFound = false;
-            Console.WriteLine("Введите имя абонента:");
-            string? name = Console.ReadLine();
+
             for (int i = 0; i < subscribers.Count; i++)
             {
                 if (subscribers[i].Name == name)
@@ -207,13 +145,13 @@ namespace Lesson_5
         }
 
         /// <summary>
-        /// Выводит имя абонента по номеру
+        /// Выводит имя абонента по номеру.
         /// </summary>
-        private void FindNameOfSubscriber()
+        /// <param name="phoneNumber">Номер абонента.</param>
+        public void FindSubscriberByNumber(string phoneNumber)
         {
             bool IsFound = false;
-            Console.WriteLine("Введите номер абонента:");
-            string? phoneNumber = Console.ReadLine();
+
             for (int i = 0; i < subscribers.Count; i++)
             {
                 if (subscribers[i].PhoneNumber == phoneNumber)
@@ -228,17 +166,16 @@ namespace Lesson_5
         }
 
         /// <summary>
-        /// Записывает данные абонента в файл
+        /// Записывает данные абонента в файл.
         /// </summary>
-        private void WriteToFile()
+        public void WriteToFile()
         {
             using (FileStream file = new FileStream(path, FileMode.OpenOrCreate))
             using (StreamWriter sw = new StreamWriter(file))
             {
                 for (int i = 0; i < subscribers.Count; i++)
                 {
-                    sw.WriteLine(subscribers[i].Name);
-                    sw.WriteLine(subscribers[i].PhoneNumber);
+                    sw.WriteLine($"{ subscribers[i].Name}\t{ subscribers[i].PhoneNumber}");
                 }
             }
         }

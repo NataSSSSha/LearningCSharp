@@ -6,17 +6,22 @@ using System.Threading.Tasks;
 
 namespace Lesson_5
 {
+    /// <summary>
+    /// Класс Subscriber содержит информацию об абонетах и их телефонных номерах.
+    /// </summary>
     internal class Subscriber
     {
         /// <summary>
         /// абонент
         /// </summary>
         private string name;
+
         public string Name { get { return name; } }
         /// <summary>
         /// номер телефона абонента
         /// </summary>
         private string phoneNumber;
+
         public string PhoneNumber
         {
             get { return phoneNumber; }
